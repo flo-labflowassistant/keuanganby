@@ -1,0 +1,109 @@
+Sheets: ['Budgeting', 'Spending Tracker', 'Report', 'Summary', 'Konfigurasi ⚙']
+
+--- Sheet: Budgeting ---
+Columns: ['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13', 'Unnamed: 14', 'Unnamed: 15']
+    Unnamed: 0          Unnamed: 1      Unnamed: 2     Unnamed: 3 Unnamed: 4 Unnamed: 5 Unnamed: 6 Unnamed: 7 Unnamed: 8 Unnamed: 9 Unnamed: 10 Unnamed: 11 Unnamed: 12 Unnamed: 13 Unnamed: 14 Unnamed: 15
+0          NaN               Month         Account  Main Category    January   February      March      April        May       June        July      August   September     October    November    Desember
+1          NaN                 NaN             NaN            NaN        NaN        NaN        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+2          NaN      Income Sources             NaN            NaN        NaN        NaN        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+3          NaN      Monthly Salary             NaN            NaN    5969800    6547101        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+4          NaN  Freelance/Business             NaN            NaN        NaN        NaN        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+5          NaN        Total Income             NaN            NaN    5969800    6547101          0          0          0          0           0           0           0           0           0           0
+6          NaN                 NaN             NaN            NaN        NaN        NaN        NaN        NaN        NaN        NaN         NaN         NaN         NaN           ,         NaN         NaN
+7          NaN         Saving List             NaN            NaN        NaN        NaN        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+8          NaN     General Savings  Bank Mandiri 2            NaN     192984     694601        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+9          NaN           Emergency    Bank Mandiri            NaN        NaN        NaN        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+10         NaN       Total Savings             NaN            NaN     192984     694601          0          0          0          0           0           0           0           0           0           0
+11         NaN         Grand Total             NaN            NaN    6054326    6547101          0          0          0          0           0           0           0           0           0           0
+12         NaN                 NaN             NaN            NaN        NaN        NaN        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+13         NaN      Budgeting List             NaN            NaN        NaN        NaN        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+14         NaN                 Kos    Bank Mandiri            NaN    1500000    1500000        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+15         NaN             Makanan    Bank Mandiri            NaN    1354784    1200000        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+16         NaN            Skincare    Bank Mandiri            NaN     175402     200000        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+17         NaN         Self-reward    Bank Mandiri            NaN     154500     200000        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+18         NaN            Transfer    Bank Mandiri            NaN    1100000    1100000        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+19         NaN             Lainnya    Bank Mandiri            NaN    1576656    1652500        NaN        NaN        NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN
+
+--- Sheet: Spending Tracker ---
+Columns: ['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6']
+    Unnamed: 0        Unnamed: 1           Unnamed: 2          Unnamed: 3 Unnamed: 4 Unnamed: 5    Unnamed: 6
+0          NaN  Spending Tracker                  NaN                 NaN        NaN        NaN           NaN
+1          NaN               NaN                  NaN                 NaN        NaN        NaN           NaN
+2          NaN                 ✔                 Date         Description   Category      Total       Account
+3          NaN               NaN                  NaN                 NaN        NaN        NaN           NaN
+4          NaN             False  2026-01-01 00:00:00            Transfer   Transfer    1100000  Bank Mandiri
+5          NaN             False  2026-01-01 00:00:00             Sedekah    Lainnya     152500  Bank Mandiri
+6          NaN             False  2026-01-01 00:00:00       Fee Transfer     Lainnya       2500  Bank Mandiri
+7          NaN             False  2026-01-01 00:00:00               Gojek    Lainnya      36000  Bank Mandiri
+8          NaN             False  2026-01-01 00:00:00                 KRL    Lainnya       9000  Bank Mandiri
+9          NaN             False  2026-01-01 00:00:00           Telur dll    Lainnya      74800  Bank Mandiri
+10         NaN             False  2026-01-01 00:00:00               Jajan    Makanan      40000  Bank Mandiri
+11         NaN             False  2026-01-01 00:00:00  Skincare + Make up   Skincare     138902  Bank Mandiri
+12         NaN             False  2026-01-01 00:00:00              Bensin    Lainnya      45000  Bank Mandiri
+13         NaN             False  2026-01-01 00:00:00              Dimsum    Makanan      28000  Bank Mandiri
+14         NaN             False  2026-01-01 00:00:00          Kuota Cely    Lainnya      50000  Bank Mandiri
+15         NaN             False  2026-01-01 00:00:00       Udunan Ka DTU    Lainnya      50000  Bank Mandiri
+16         NaN             False  2026-01-01 00:00:00       Udunan Ka PEM    Lainnya      16000  Bank Mandiri
+17         NaN             False  2026-01-01 00:00:00         Moisturizer   Skincare      36500  Bank Mandiri
+18         NaN             False  2026-01-02 00:00:00             Restock    Lainnya      50400  Bank Mandiri
+19         NaN             False  2026-01-02 00:00:00         Stok Jajan     Makanan     145300  Bank Mandiri
+
+--- Sheet: Report ---
+Columns: ['Unnamed: 0', '  Money Management Dashboard 💸', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Year :', 2026, 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12']
+    Unnamed: 0   Money Management Dashboard 💸  Unnamed: 2    Unnamed: 3  Unnamed: 4                                                                  Unnamed: 5  Unnamed: 6             Unnamed: 7   Year :                2026  Unnamed: 10 Unnamed: 11  Unnamed: 12
+0          NaN                            NaN         NaN           NaN         NaN                                                                         NaN         NaN                    NaN  Month :            February          NaN         NaN          NaN
+1          NaN                            NaN         NaN           NaN         NaN                                                                         NaN         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+2          NaN               Monthly Report 📊         NaN           NaN         NaN                                                                         NaN         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+3          NaN                            NaN         NaN           NaN         NaN                                                                         NaN         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+4          NaN                   Total Income         NaN           NaN         NaN                                                            February Savings         NaN                    NaN      NaN  February Spendings          NaN         NaN          NaN
+5          NaN                        6547101         NaN           NaN         NaN                                                                      694601         NaN                    NaN      NaN             5116547          NaN         NaN          NaN
+6          NaN                            NaN         NaN           NaN         NaN                                                                         NaN         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+7          NaN                       Expenses         NaN  Allocation 💰         NaN                                                               Realization 💸         NaN  Budget Usage Progress      NaN             % Usage          NaN         NaN          NaN
+8          NaN                            Kos         NaN       1500000         NaN                                                                     1500000         NaN                    NaN      NaN                   1          NaN         NaN          NaN
+9          NaN                        Makanan         NaN       1200000         NaN                                                                     1196788         NaN                    NaN      NaN            0.997323          NaN         NaN          NaN
+10         NaN                       Skincare         NaN        200000         NaN                                                                           0         NaN                    NaN      NaN                   0          NaN         NaN          NaN
+11         NaN                    Self-reward         NaN        200000         NaN                                                                      200000         NaN                    NaN      NaN                   1          NaN         NaN          NaN
+12         NaN                       Transfer         NaN       1100000         NaN                                                                     1100000         NaN                    NaN      NaN                   1          NaN         NaN          NaN
+13         NaN                        Lainnya         NaN       1652500         NaN                                                                     1119759         NaN                    NaN      NaN            0.677615          NaN         NaN          NaN
+14         NaN                            NaN         NaN           NaN         NaN                                                                         NaN         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+15         NaN      Expense Realization Price         NaN           NaN         NaN                                                       Monthly Expense Trend         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+16         NaN                            NaN         NaN           NaN         NaN                                                                         NaN         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+17         NaN                            NaN         NaN           NaN         NaN                                                                         NaN         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+18         NaN                            NaN         NaN           NaN         NaN                                                                         NaN         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+19         NaN                            NaN         NaN           NaN         NaN                                                                         NaN         NaN                    NaN      NaN                 NaN          NaN         NaN          NaN
+
+--- Sheet: Summary ---
+Columns: ['Unnamed: 0', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7']
+    Unnamed: 0         Unnamed: 1      Unnamed: 2       Unnamed: 3           Unnamed: 4  Unnamed: 5        Unnamed: 6  Unnamed: 7
+0          NaN             Year :            2026              NaN  Melanie Despitasari         NaN             Month     January
+1          NaN  Budgeting Summary             NaN              NaN                  NaN         NaN               NaN         NaN
+2          NaN                NaN             NaN              NaN                  NaN         NaN               NaN         NaN
+3          NaN       Bank Mandiri             NaN          5861342                Needs           0      Total Income     5969800
+4          NaN     Bank Mandiri 2             NaN           192984                Wants           0     Non-allocated      -84526
+5          NaN           E-wallet             NaN                0              Savings           0  Usage Percentage    1.014159
+6          NaN                NaN             NaN              NaN                  NaN         NaN               NaN         NaN
+7          NaN            Account             NaN    Expenses List        Main Category  Allocation               NaN  Percentage
+8          NaN                  ✔             NaN              NaN                  NaN         NaN               NaN         NaN
+9          NaN              False  Bank Mandiri 2  General Savings              Savings      192984               NaN    0.032327
+10         NaN              False    Bank Mandiri        Emergency              Savings         NaN               NaN           0
+11         NaN              False    Bank Mandiri              Kos                Needs     1500000               NaN    0.251265
+12         NaN              False    Bank Mandiri          Makanan                Needs     1354784               NaN     0.22694
+13         NaN              False    Bank Mandiri         Skincare                Needs      175402               NaN    0.029382
+14         NaN              False    Bank Mandiri      Self-Reward                Wants      154500               NaN     0.02588
+15         NaN              False    Bank Mandiri         Transfer                Needs     1100000               NaN    0.184261
+16         NaN              False    Bank Mandiri          Lainnya                Wants     1576656               NaN    0.264105
+17         NaN                NaN             NaN            Total                  NaN     5861342               NaN    0.981832
+18         NaN                NaN             NaN              NaN                  NaN         NaN               NaN         NaN
+19         NaN                NaN             NaN              NaN                  NaN         NaN               NaN         NaN
+
+--- Sheet: Konfigurasi ⚙ ---
+Columns: ['Daftar Kategori', 'Unnamed: 1', 'Unnamed: 2', 'Daftar Akun', 'Sumber Pemasukan', 'Unnamed: 5', 'Tujuan Tabungan']
+        Daftar Kategori   Unnamed: 1  Unnamed: 2     Daftar Akun    Sumber Pemasukan  Unnamed: 5  Tujuan Tabungan
+0  Kategori Pengeluaran  Klasifikasi         NaN       Nama Akun              Sumber         NaN           Tujuan
+1                   Kos        Needs         NaN    Bank Mandiri      Monthly Salary         NaN  General Savings
+2               Makanan        Needs         NaN  Bank Mandiri 2  Freelance/Business         NaN        Emergency
+3              Skincare        Needs         NaN             NaN                 NaN         NaN              NaN
+4           Self-reward        Wants         NaN             NaN                 NaN         NaN              NaN
+5              Transfer        Needs         NaN             NaN                 NaN         NaN              NaN
+6               Lainnya        Wants         NaN             NaN                 NaN         NaN              NaN
+

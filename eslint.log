@@ -1,0 +1,89 @@
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\app\(auth)\login\page.tsx
+  4:8  warning  'Link' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\app\(dashboard)\reports\page.tsx
+  196:62  warning  'index' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\app\(dashboard)\savings\page.tsx
+  25:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  84:60  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\app\(dashboard)\transactions\page.tsx
+  79:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\budget\budget-allocation.tsx
+  50:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\budget\budget-summary-bar.tsx
+   4:25   warning  'useTransactions' is defined but never used        @typescript-eslint/no-unused-vars
+   8:13   warning  'currentMonth' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   8:27   warning  'currentYear' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  12:108  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  13:110  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  14:140  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\budget\income-sources-form.tsx
+   3:10  warning  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+   4:16  warning  'Loader2' is defined but never used       @typescript-eslint/no-unused-vars
+   8:10  warning  'cn' is defined but never used            @typescript-eslint/no-unused-vars
+  18:74  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:18  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  61:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\budget\savings-targets-form.tsx
+   5:10  warning  'cn' is defined but never used            @typescript-eslint/no-unused-vars
+   6:10  warning  'Progress' is defined but never used      @typescript-eslint/no-unused-vars
+  16:70  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\dashboard\budget-usage.tsx
+  6:10  warning  'Progress' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\dashboard\monthly-trend-chart.tsx
+  71:121  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\dashboard\monthly-trend-chart.tsx:71:121
+  69 |                     <div className="w-full h-full flex items-end gap-2 pb-5 pt-8 px-2 animate-pulse">
+  70 |                         {[1, 2, 3, 4, 5, 6].map((i) => (
+> 71 |                             <div key={i} className="flex-1 bg-primary/10 rounded-t-sm" style={{ height: `${Math.max(20, Math.random() * 100)}%` }} />
+     |                                                                                                                         ^^^^^^^^^^^^^ Cannot call impure function
+  72 |                         ))}
+  73 |                     </div>
+  74 |                 ) : (  react-hooks/purity
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\transactions\add-transaction-dialog.tsx
+  68:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\transactions\transaction-filters.tsx
+  8:10  warning  'mockCategories' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\components\transactions\transaction-table.tsx
+  27:10  warning  'getCategoryLabel' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\hooks\use-media-query.ts
+  8:9  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\hooks\use-media-query.ts:8:9
+   6 |     useEffect(() => {
+   7 |         const media = window.matchMedia(query);
+>  8 |         setMatches(media.matches);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+   9 |
+  10 |         const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+  11 |         media.addEventListener("change", handler);  react-hooks/set-state-in-effect
+
+C:\Users\admin\Desktop\AI\System Projects\by\src\services\api.ts
+  225:13  error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  300:42  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+
+✖ 30 problems (15 errors, 15 warnings)
+
