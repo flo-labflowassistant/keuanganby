@@ -404,6 +404,11 @@ export async function updateSavingGoalAmount(id: string, addedAmount: number, go
     if (txtError) throw txtError;
 }
 
+export async function deleteSavingGoal(id: string): Promise<void> {
+    const { error } = await supabase.from('saving_goals').delete().eq('id', id);
+    if (error) throw error;
+}
+
 // === REMINDERS ===
 
 export async function getReminders(): Promise<Reminder[]> {

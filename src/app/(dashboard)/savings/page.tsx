@@ -1,9 +1,9 @@
 "use client";
 
-import { Plus, Target, Trophy, Calendar, Loader2 } from "lucide-react";
+import { Plus, Target, Trophy, Calendar, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency } from "@/lib/utils";
-import { useCategories, useSavingGoals, useMonthlyBudgets } from "@/hooks/use-queries";
+import { useCategories, useSavingGoals, useMonthlyBudgets, useDeleteSavingGoal } from "@/hooks/use-queries";
 import { useUIStore } from "@/stores/ui-store";
 import { AddSavingGoalDialog } from "@/components/budget/add-saving-goal-dialog";
 import { AddSavingBalanceDialog } from "@/components/budget/add-saving-balance-dialog";
@@ -24,7 +24,14 @@ export default function SavingsPage() {
     const { data: categories = [], isLoading: loadingCats } = useCategories();
     const { data: savingGoals = [], isLoading: loadingGoals } = useSavingGoals();
     const { data: monthlyBudgets = [], isLoading: loadingBudgets } = useMonthlyBudgets(currentMonth, currentYear);
+    const deleteGoal = useDeleteSavingGoal();
     const isLoading = loadingCats || loadingBudgets;
+
+    const handleDeleteGoal = (id: string, name: string) => {
+        if (window.confirm(`Yakin ingin menghapus target "${name}"?`)) {
+            deleteGoal.mutate(id);
+        }
+    };
 
     // Filter only Savings categories
     const savingsCats = categories.filter(c => c.mainCategory === 'Savings');
@@ -40,7 +47,7 @@ export default function SavingsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h2 className="text-xl font-bold text-foreground">
-                        Tabungan & Target 🐷
+                        Tabungan & Target 🎯
                     </h2>
                     <p className="text-sm text-muted-foreground mt-1">
                         {isLoading ? (
@@ -138,17 +145,27 @@ export default function SavingsPage() {
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
-                                            <Badge
-                                                variant="outline"
-                                                className={cn(
-                                                    "rounded-full text-[10px] font-medium border",
-                                                    pct >= 60
-                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                        : "bg-amber-50 text-amber-700 border-amber-200"
-                                                )}
-                                            >
-                                                {pct}%
-                                            </Badge>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleDeleteGoal(goal.id, goal.name)}
+                                                    className="text-muted-foreground hover:text-red-500 transition-colors disabled:opacity-50"
+                                                    disabled={deleteGoal.isPending}
+                                                    title="Hapus Target"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "rounded-full text-[10px] font-medium border",
+                                                        pct >= 60
+                                                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                                            : "bg-amber-50 text-amber-700 border-amber-200"
+                                                    )}
+                                                >
+                                                    {pct}%
+                                                </Badge>
+                                            </div>
                                             <AddSavingBalanceDialog goal={goal} />
                                         </div>
                                     </div>

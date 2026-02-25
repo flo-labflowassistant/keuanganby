@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, CreditCard } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, Target, CreditCard } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useDashboardSummary } from "@/hooks/use-queries";
 import { useUIStore } from "@/stores/ui-store";
@@ -82,7 +82,7 @@ export function SummaryCards() {
             label: "Total Tabungan",
             amount: data.totalSavings,
             trend: data.savingsTrend,
-            icon: PiggyBank,
+            icon: Target,
             iconColor: "text-blue-600",
             iconBg: "bg-blue-50",
         },

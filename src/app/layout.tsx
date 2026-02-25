@@ -19,7 +19,7 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pencatat Keuangan Pribadi",
+  title: "KeuanganBy - Melanie",
   description: "Kelola anggaran bulanan, lacak pengeluaran, dan raih target tabunganmu.",
 };
 

@@ -6,7 +6,7 @@ import {
     LayoutDashboard,
     Wallet,
     ArrowLeftRight,
-    PiggyBank,
+    Target,
     BarChart3,
     Bell,
     Settings,
@@ -18,7 +18,7 @@ const iconMap: Record<string, React.ElementType> = {
     LayoutDashboard,
     Wallet,
     ArrowLeftRight,
-    PiggyBank,
+    Target,
     BarChart3,
     Bell,
     Settings,
@@ -39,7 +39,7 @@ export function Sidebar() {
                         KeuanganBy
                     </span>
                     <span className="text-[11px] text-muted-foreground leading-tight">
-                        Pencatat Keuangan
+                        By Farrel Arya A
                     </span>
                 </div>
             </div>

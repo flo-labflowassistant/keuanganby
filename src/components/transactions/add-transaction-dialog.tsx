@@ -23,7 +23,7 @@ import { Switch } from "@/components/ui/switch";
 import { useCategories, useCreateTransaction } from "@/hooks/use-queries";
 import { toast } from "sonner";
 
-const accountNames = ["Cash", "Bank Mandiri", "BCA", "GoPay", "Credit Card"];
+const accountNames = ["Cash", "Bank Mandiri", "BCA", "OVO"];
 
 export function AddTransactionDialog({ children }: { children?: React.ReactNode }) {
     const [open, setOpen] = useState(false);

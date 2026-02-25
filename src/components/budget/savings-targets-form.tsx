@@ -1,6 +1,6 @@
 "use client";
 
-import { PiggyBank, ArrowRight, Loader2 } from "lucide-react";
+import { Target, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
@@ -24,7 +24,7 @@ export function SavingsTargetsForm() {
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
-                        <PiggyBank className="h-4 w-4 text-blue-600" />
+                        <Target className="h-4 w-4 text-blue-600" />
                     </div>
                     <div>
                         <h3 className="text-sm font-semibold text-foreground">Target Tabungan</h3>
@@ -51,7 +51,7 @@ export function SavingsTargetsForm() {
                         className="flex items-center justify-between rounded-xl bg-blue-50/50 px-3 py-2.5"
                     >
                         <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-sm">{saving.icon === 'circle' ? '🔵' : (saving.icon || '🐷')}</span>
+                            <span className="text-sm">{saving.icon === 'circle' ? '🔵' : (saving.icon || '🎯')}</span>
                             <div className="min-w-0">
                                 <p className="text-sm font-medium text-foreground truncate">{saving.name}</p>
                             </div>

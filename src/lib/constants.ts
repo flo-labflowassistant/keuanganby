@@ -4,7 +4,7 @@ export const NAV_ITEMS: NavItem[] = [
     { label: "Beranda", icon: "LayoutDashboard", href: "/" },
     { label: "Anggaran", icon: "Wallet", href: "/budget" },
     { label: "Transaksi", icon: "ArrowLeftRight", href: "/transactions" },
-    { label: "Tabungan & Target", icon: "PiggyBank", href: "/savings" },
+    { label: "Tabungan & Target", icon: "Target", href: "/savings" },
     { label: "Laporan", icon: "BarChart3", href: "/reports" },
     { label: "Pengingat", icon: "Bell", href: "/reminders" },
     { label: "Pengaturan", icon: "Settings", href: "/settings" },
@@ -26,8 +26,6 @@ export const DEFAULT_ACCOUNTS = [
     "Bank Mandiri",
     "BCA",
     "Cash",
-    "Credit Card",
-    "GoPay",
     "OVO",
 ];
 
@@ -46,7 +44,7 @@ export const CATEGORY_ICONS: Record<string, string> = {
     "Subscriptions": "CreditCard",
     "Emergency Fund": "ShieldCheck",
     "Investment": "TrendingUp",
-    "General Savings": "PiggyBank",
+    "General Savings": "Target",
 };
 
 export const CURRENCY_CONFIG = {

@@ -99,6 +99,19 @@ export function useUpdateSavingGoalAmount() {
     });
 }
 
+export function useDeleteSavingGoal() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => api.deleteSavingGoal(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["savingGoals"] });
+            queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
+            queryClient.invalidateQueries({ queryKey: ["budgetStatus"] });
+        },
+    });
+}
+
 export function useCreateTransaction() {
     const queryClient = useQueryClient();
 
