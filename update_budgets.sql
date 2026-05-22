@@ -1,7 +1,7 @@
 -- UPDATE BUDGET ALLOCATIONS
 UPDATE categories SET budget_allocation = 5969800 WHERE name = 'Monthly Salary';
 UPDATE categories SET budget_allocation = 5969800 WHERE name = 'Total Income';
-UPDATE categories SET budget_allocation = 192984 WHERE name = 'General Savings';
+UPDATE categories SET budget_allocation = 192984 WHERE name = 'Tabungan';
 UPDATE categories SET budget_allocation = 192984 WHERE name = 'Total Savings';
 UPDATE categories SET budget_allocation = 6054326 WHERE name = 'Grand Total';
 UPDATE categories SET budget_allocation = 1500000 WHERE name = 'Kos';

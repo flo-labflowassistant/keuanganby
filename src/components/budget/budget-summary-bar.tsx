@@ -1,23 +1,26 @@
 "use client";
 
 import { cn, formatCurrency } from "@/lib/utils";
-import { useCategories, useMonthlyBudgets } from "@/hooks/use-queries";
+import { useTransactions } from "@/hooks/use-queries";
 import { useUIStore } from "@/stores/ui-store";
 
 export function BudgetSummaryBar() {
     const { currentMonth, currentYear } = useUIStore();
-    const { data: categories = [], isLoading: loadingCats } = useCategories();
-    const { data: monthlyBudgets = [], isLoading: loadingBudgets } = useMonthlyBudgets(currentMonth, currentYear);
-    const isLoading = loadingCats || loadingBudgets;
-    // Also fetch transactions to get actual income if we want, but for budget planning we use categories budget_allocation
+    const { data: transactions = [], isLoading } = useTransactions(currentMonth, currentYear, "Kartu Utama");
 
-    // Helper to get budget for a category
-    const getBudget = (categoryId: string) => monthlyBudgets.find(b => b.categoryId === categoryId)?.amount || 0;
+    const totalIncome = transactions
+        .filter((txn) => txn.amount > 0)
+        .reduce((sum, txn) => sum + txn.amount, 0);
 
-    const totalIncome = categories.filter(c => c.mainCategory === 'Income').reduce((sum, c) => sum + getBudget(c.id), 0);
-    const totalSavings = categories.filter(c => c.mainCategory === 'Savings').reduce((sum, c) => sum + getBudget(c.id), 0);
-    const totalAllocated = categories.filter(c => c.mainCategory === 'Needs' || c.mainCategory === 'Wants').reduce((sum, c) => sum + getBudget(c.id), 0);
-    const remaining = totalIncome - totalAllocated - totalSavings;
+    const totalTabungan = transactions
+        .filter((txn) => txn.amount < 0 && txn.category?.mainCategory === "Savings")
+        .reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
+
+    const totalTerpakai = transactions
+        .filter((txn) => txn.amount < 0 && txn.category?.mainCategory !== "Savings")
+        .reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
+
+    const remaining = totalIncome - totalTerpakai - totalTabungan;
 
     const cards = [
         {
@@ -25,36 +28,43 @@ export function BudgetSummaryBar() {
             amount: totalIncome,
             color: "text-emerald-600",
             bg: "bg-emerald-50",
-            emoji: "💰",
+            emoji: "Rp",
         },
         {
-            label: "Teralokasi",
-            amount: totalAllocated,
+            label: "Operasional",
+            amount: totalTerpakai,
             color: "text-primary",
             bg: "bg-primary/10",
-            emoji: "📋",
+            emoji: "OP",
         },
         {
-            label: "Sisa",
+            label: "Tabungan",
+            amount: totalTabungan,
+            color: "text-blue-600",
+            bg: "bg-blue-50",
+            emoji: "TG",
+        },
+        {
+            label: "Sisa Saldo",
             amount: remaining,
             color: remaining >= 0 ? "text-emerald-600" : "text-destructive",
             bg: remaining >= 0 ? "bg-emerald-50" : "bg-red-50",
-            emoji: remaining >= 0 ? "✅" : "⚠️",
+            emoji: remaining >= 0 ? "OK" : "!",
         },
     ];
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {isLoading ? (
-                <div className="col-span-3 text-center py-4 text-sm text-muted-foreground">Memuat data ringkasan...</div>
+                <div className="sm:col-span-2 lg:col-span-4 text-center py-4 text-sm text-muted-foreground">
+                    Memuat data ringkasan...
+                </div>
             ) : cards.map((card) => (
                 <div
                     key={card.label}
-                    className={cn(
-                        "rounded-2xl border border-primary/10 bg-white p-4 flex items-center gap-3"
-                    )}
+                    className="rounded-2xl border border-primary/10 bg-white p-4 flex items-center gap-3"
                 >
-                    <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl text-base", card.bg)}>
+                    <div className={cn("flex h-10 w-10 items-center justify-center rounded-xl text-xs font-semibold", card.bg, card.color)}>
                         {card.emoji}
                     </div>
                     <div>

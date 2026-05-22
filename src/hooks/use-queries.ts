@@ -27,10 +27,17 @@ export function useMonthlyTrend(month: number, year: number) {
     });
 }
 
-export function useTransactions(month: number, year: number) {
+export function useTransactions(month: number, year: number, accountName?: string) {
     return useQuery({
-        queryKey: ["transactions", month, year],
-        queryFn: () => api.getTransactions(month, year),
+        queryKey: ["transactions", month, year, accountName ?? "all"],
+        queryFn: () => api.getTransactions(month, year, accountName),
+    });
+}
+
+export function useSavingsOverview(month: number, year: number) {
+    return useQuery({
+        queryKey: ["savingsOverview", month, year],
+        queryFn: () => api.getSavingsOverview(month, year),
     });
 }
 
@@ -38,8 +45,7 @@ export function usePaginatedTransactions(filter: TransactionFilter) {
     return useQuery({
         queryKey: ["paginatedTransactions", filter],
         queryFn: () => api.getPaginatedTransactions(filter),
-        // @ts-ignore
-        keepPreviousData: true,
+        placeholderData: (previousData) => previousData,
     });
 }
 
@@ -47,6 +53,13 @@ export function useCategories() {
     return useQuery({
         queryKey: ["categories"],
         queryFn: () => api.getCategories(),
+    });
+}
+
+export function useAccounts() {
+    return useQuery({
+        queryKey: ["accounts"],
+        queryFn: () => api.getAccounts(),
     });
 }
 
@@ -93,8 +106,10 @@ export function useUpdateSavingGoalAmount() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["savingGoals"] });
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
+            queryClient.invalidateQueries({ queryKey: ["savingsOverview"] });
             queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
             queryClient.invalidateQueries({ queryKey: ["budgetStatus"] });
+            queryClient.invalidateQueries({ queryKey: ["accounts"] });
         },
     });
 }
@@ -108,6 +123,7 @@ export function useDeleteSavingGoal() {
             queryClient.invalidateQueries({ queryKey: ["savingGoals"] });
             queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
             queryClient.invalidateQueries({ queryKey: ["budgetStatus"] });
+            queryClient.invalidateQueries({ queryKey: ["savingsOverview"] });
         },
     });
 }
@@ -118,10 +134,12 @@ export function useCreateTransaction() {
     return useMutation({
         mutationFn: (txn: Partial<Transaction>) => api.createTransaction(txn),
         onSuccess: () => {
-            // Invalidate queries to refetch
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
+            queryClient.invalidateQueries({ queryKey: ["paginatedTransactions"] });
+            queryClient.invalidateQueries({ queryKey: ["savingsOverview"] });
             queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
             queryClient.invalidateQueries({ queryKey: ["budgetStatus"] });
+            queryClient.invalidateQueries({ queryKey: ["accounts"] });
         },
     });
 }
@@ -134,8 +152,10 @@ export function useDeleteTransaction() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["transactions"] });
             queryClient.invalidateQueries({ queryKey: ["paginatedTransactions"] });
+            queryClient.invalidateQueries({ queryKey: ["savingsOverview"] });
             queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
             queryClient.invalidateQueries({ queryKey: ["budgetStatus"] });
+            queryClient.invalidateQueries({ queryKey: ["accounts"] });
         },
     });
 }

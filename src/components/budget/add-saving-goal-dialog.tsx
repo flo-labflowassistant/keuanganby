@@ -20,6 +20,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useCreateSavingGoal } from "@/hooks/use-queries";
+import { formatDateInputValue } from "@/lib/utils";
 import { toast } from "sonner";
 
 const goalIcons = [
@@ -30,6 +31,12 @@ const goalIcons = [
     { value: "GraduationCap", label: "🎓 Pendidikan", emoji: "🎓" },
 ];
 
+function getDefaultDeadline() {
+    const deadline = new Date();
+    deadline.setFullYear(deadline.getFullYear() + 1);
+    return formatDateInputValue(deadline);
+}
+
 export function AddSavingGoalDialog() {
     const [open, setOpen] = useState(false);
     const createGoal = useCreateSavingGoal();
@@ -37,7 +44,7 @@ export function AddSavingGoalDialog() {
     const [form, setForm] = useState({
         name: "",
         targetAmount: "",
-        deadline: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split("T")[0],
+        deadline: getDefaultDeadline(),
         icon: "Target",
     });
 
@@ -57,7 +64,7 @@ export function AddSavingGoalDialog() {
             setForm({
                 name: "",
                 targetAmount: "",
-                deadline: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split("T")[0],
+                deadline: getDefaultDeadline(),
                 icon: "Target",
             });
         } catch {

@@ -48,7 +48,7 @@ export default function ReportsPage() {
     const { data: trendData = [], isLoading: loadingTrend } = useMonthlyTrend(currentMonth, currentYear);
     const { data: budgetStatus = [], isLoading: loadingBudget } = useBudgetStatus(currentMonth, currentYear);
     const { data: categories = [], isLoading: loadingCats } = useCategories();
-    const { data: transactions = [], isLoading: loadingTxns } = useTransactions(currentMonth, currentYear);
+    const { data: transactions = [], isLoading: loadingTxns } = useTransactions(currentMonth, currentYear, "Kartu Utama");
 
     // --- Data prep ---
     const barData = useMemo(() => {
@@ -124,7 +124,7 @@ export default function ReportsPage() {
                     </div>
                     <div className="h-[250px]">
                         {barData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                                 <BarChart data={barData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#f3e8ff" vertical={false} />
                                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={{ stroke: "#f3e8ff" }} tickLine={false} />
@@ -152,7 +152,7 @@ export default function ReportsPage() {
                     </div>
                     <div className="h-[250px]">
                         {savingsLineData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                                 <LineChart data={savingsLineData} margin={{ top: 5, right: 5, left: -15, bottom: -10 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#f3e8ff" vertical={false} />
                                     <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={{ stroke: "#f3e8ff" }} tickLine={false} />
@@ -181,7 +181,7 @@ export default function ReportsPage() {
                     </div>
                     <div className="h-[250px] flex items-center justify-center">
                         {pieData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                                 <PieChart>
                                     <Pie
                                         data={pieData}
@@ -228,7 +228,7 @@ export default function ReportsPage() {
                     </div>
                     <div className="h-[250px]">
                         {categorySpending.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                                 <BarChart data={categorySpending} layout="vertical" margin={{ top: 5, right: 5, left: 10, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#f3e8ff" horizontal={false} />
                                     <XAxis type="number" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} tickFormatter={(v: number) => v >= 1000000 ? `${(v / 1_000_000).toFixed(1)}jt` : `${(v / 1_000).toFixed(0)}rb`} />

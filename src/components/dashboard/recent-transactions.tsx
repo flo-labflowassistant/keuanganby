@@ -15,6 +15,7 @@ import {
     ShieldCheck,
     TrendingUp,
     ArrowRight,
+    PiggyBank,
 } from "lucide-react";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { useTransactions } from "@/hooks/use-queries";
@@ -34,6 +35,7 @@ const iconMap: Record<string, React.ElementType> = {
     CreditCard,
     ShieldCheck,
     TrendingUp,
+    PiggyBank,
 };
 
 function getCategoryBadgeStyle(mainCategory: string) {
@@ -60,7 +62,7 @@ function getCategoryLabel(mainCategory: string) {
 
 export function RecentTransactions() {
     const { currentMonth, currentYear } = useUIStore();
-    const { data: allTransactions, isLoading } = useTransactions(currentMonth, currentYear);
+    const { data: allTransactions, isLoading } = useTransactions(currentMonth, currentYear, "Kartu Utama");
 
     // Safety check map to fallback category info if empty
     const transactions = (allTransactions || []).map(txn => ({

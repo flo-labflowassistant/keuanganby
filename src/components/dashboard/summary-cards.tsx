@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp, TrendingDown, Wallet, Target, CreditCard } from "lucide-react";
+import { TrendingUp, TrendingDown, Wallet, CreditCard, PiggyBank } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import { useDashboardSummary } from "@/hooks/use-queries";
 import { useUIStore } from "@/stores/ui-store";
@@ -79,20 +79,20 @@ export function SummaryCards() {
             iconBg: "bg-emerald-50",
         },
         {
-            label: "Total Tabungan",
-            amount: data.totalSavings,
-            trend: data.savingsTrend,
-            icon: Target,
-            iconColor: "text-blue-600",
-            iconBg: "bg-blue-50",
-        },
-        {
-            label: "Total Pengeluaran",
+            label: "Pengeluaran Operasional",
             amount: data.totalExpenses,
             trend: data.expensesTrend,
             icon: CreditCard,
             iconColor: "text-rose-500",
             iconBg: "bg-rose-50",
+        },
+        {
+            label: "Tabungan Bulan Ini",
+            amount: data.totalSavings,
+            trend: data.savingsTrend,
+            icon: PiggyBank,
+            iconColor: "text-blue-600",
+            iconBg: "bg-blue-50",
         },
     ];
 

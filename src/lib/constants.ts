@@ -45,6 +45,7 @@ export const CATEGORY_ICONS: Record<string, string> = {
     "Emergency Fund": "ShieldCheck",
     "Investment": "TrendingUp",
     "General Savings": "Target",
+    "Tabungan": "PiggyBank",
 };
 
 export const CURRENCY_CONFIG = {

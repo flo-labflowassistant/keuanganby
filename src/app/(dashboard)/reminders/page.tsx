@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Bell, BellOff, Check, Calendar, RotateCcw, Loader2, Trash2 } from "lucide-react";
+import { Bell, BellOff, Check, Calendar, RotateCcw, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatDate, parseDateOnly } from "@/lib/utils";
 import { useReminders, useUpdateReminderStatus, useDeleteReminder } from "@/hooks/use-queries";
 import { AddReminderDialog } from "@/components/reminders/add-reminder-dialog";
 
@@ -21,7 +21,7 @@ export default function RemindersPage() {
     const completed = reminders.filter((r) => r.isCompleted);
 
     function getDaysUntil(dateStr: string): number {
-        const due = new Date(dateStr);
+        const due = parseDateOnly(dateStr);
         // Compare with today
         const now = new Date();
         now.setHours(0, 0, 0, 0);
@@ -70,7 +70,7 @@ export default function RemindersPage() {
                 ) : (
                     <div className="space-y-2">
                         {upcoming
-                            .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+                            .sort((a, b) => parseDateOnly(a.dueDate).getTime() - parseDateOnly(b.dueDate).getTime())
                             .map((reminder) => {
                                 const days = getDaysUntil(reminder.dueDate);
                                 const urgency = getUrgencyStyle(days);

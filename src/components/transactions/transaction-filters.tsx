@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { MainCategory } from "@/types";
+import { useAccounts } from "@/hooks/use-queries";
 
 interface TransactionFiltersProps {
     search: string;
@@ -22,8 +23,6 @@ const mainCategories: { value: MainCategory; label: string; emoji: string }[] = 
     { value: "Savings", label: "Tabungan", emoji: "🐷" },
 ];
 
-const accountNames = ["Cash", "Bank Mandiri", "BCA", "GoPay", "Credit Card"];
-
 export function TransactionFilters({
     search,
     onSearchChange,
@@ -32,6 +31,7 @@ export function TransactionFilters({
     accountName,
     onAccountNameChange,
 }: TransactionFiltersProps) {
+    const { data: accounts = [] } = useAccounts();
     const hasFilters = mainCategory !== null || accountName !== null;
 
     const clearFilters = () => {
@@ -79,19 +79,19 @@ export function TransactionFilters({
                 <span className="text-[10px] text-muted-foreground">|</span>
 
                 {/* Account */}
-                {accountNames.map((acc) => (
+                {accounts.map((acc) => (
                     <Badge
-                        key={acc}
+                        key={acc.id}
                         variant="outline"
                         className={cn(
                             "cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-medium transition-all border",
-                            accountName === acc
+                            accountName === acc.name
                                 ? "bg-primary text-white border-primary"
                                 : "bg-white text-foreground border-primary/15 hover:border-primary/30"
                         )}
-                        onClick={() => onAccountNameChange(accountName === acc ? null : acc)}
+                        onClick={() => onAccountNameChange(accountName === acc.name ? null : acc.name)}
                     >
-                        {acc}
+                        {acc.name}
                     </Badge>
                 ))}
 

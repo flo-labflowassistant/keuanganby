@@ -12,11 +12,18 @@ interface UIState {
     prevMonth: () => void;
 }
 
+function getCurrentMonthYear() {
+    const now = new Date();
+    return {
+        currentMonth: now.getMonth() + 1,
+        currentYear: now.getFullYear(),
+    };
+}
+
 export const useUIStore = create<UIState>((set) => ({
     sidebarOpen: true,
     mobileSidebarOpen: false,
-    currentMonth: 2,
-    currentYear: 2026,
+    ...getCurrentMonthYear(),
 
     toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
     toggleMobileSidebar: () => set((s) => ({ mobileSidebarOpen: !s.mobileSidebarOpen })),

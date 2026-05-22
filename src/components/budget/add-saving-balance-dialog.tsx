@@ -1,15 +1,15 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import { Plus, Wallet, Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,20 +30,15 @@ export function AddSavingBalanceDialog({ goal }: AddSavingBalanceDialogProps) {
 
     const remaining = goal.targetAmount - goal.currentAmount;
 
-    // Format input as currency
-    const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.replace(/\D/g, "");
-        if (value) {
-            setAmount(parseInt(value).toLocaleString("id-ID"));
-        } else {
-            setAmount("");
-        }
+    const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value.replace(/\D/g, "");
+        setAmount(value ? Number(value).toLocaleString("id-ID") : "");
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
 
-        const numericAmount = parseInt(amount.replace(/\D/g, ""));
+        const numericAmount = Number(amount.replace(/\D/g, ""));
 
         if (!numericAmount || numericAmount <= 0) {
             toast.error("Masukkan nominal yang valid");
@@ -54,14 +49,13 @@ export function AddSavingBalanceDialog({ goal }: AddSavingBalanceDialogProps) {
             { id: goal.id, addedAmount: numericAmount, goalName: goal.name },
             {
                 onSuccess: () => {
-                    toast.success("Saldo berhasil ditambahkan!");
+                    toast.success("Saldo berhasil ditambahkan");
                     setOpen(false);
-                    setAmount(""); // Reset form
+                    setAmount("");
                 },
-                onError: (error) => {
-                    console.error("Failed to add balance:", error);
+                onError: () => {
                     toast.error("Gagal menambahkan saldo");
-                }
+                },
             }
         );
     };
@@ -83,13 +77,12 @@ export function AddSavingBalanceDialog({ goal }: AddSavingBalanceDialogProps) {
                     <DialogHeader>
                         <DialogTitle>Tambah Saldo Target</DialogTitle>
                         <DialogDescription>
-                            Tambahkan uang untuk "{goal.name}". Nominal tabungan ini otomatis akan tercatat sebagai pengeluaran bulan ini agar sinkron dengan arus kas Anda.
+                            Tambahkan uang untuk &quot;{goal.name}&quot;. Nominal tabungan ini otomatis dicatat sebagai pengeluaran dari Kartu Utama dan pemasukan ke Kartu Tabungan.
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="grid gap-4 py-4 mt-2">
-                        {/* Summary View */}
-                        <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100/50 flex flex-col items-center justify-center space-y-1">
+                        <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100/50 flex flex-col items-center justify-center gap-1">
                             <p className="text-xs text-muted-foreground font-medium">Sisa Target</p>
                             <p className="text-xl font-bold font-currency text-primary">
                                 {formatCurrency(remaining)}
@@ -111,7 +104,7 @@ export function AddSavingBalanceDialog({ goal }: AddSavingBalanceDialogProps) {
                                 />
                             </div>
                             <p className="text-[11px] text-muted-foreground text-right mt-1">
-                                Sisa tabungan ini akan dikurangi sebesar {amount ? `Rp ${amount}` : 'Rp 0'}
+                                Sisa target akan dikurangi sebesar {amount ? `Rp ${amount}` : "Rp 0"}
                             </p>
                         </div>
                     </div>

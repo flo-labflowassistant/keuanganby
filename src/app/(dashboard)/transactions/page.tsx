@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { TransactionTable } from "@/components/transactions/transaction-table";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction-dialog";
-import { formatCurrency } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { usePaginatedTransactions } from "@/hooks/use-queries";
 import { useUIStore } from "@/stores/ui-store";
-import type { MainCategory, TransactionFilter, PaginatedResponse, Transaction } from "@/types";
+import type { Category, MainCategory, PaginatedResponse, Transaction, TransactionFilter } from "@/types";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -20,11 +19,6 @@ export default function TransactionsPage() {
     const [search, setSearch] = useState("");
     const [mainCategory, setMainCategory] = useState<MainCategory | null>(null);
     const [accountName, setAccountName] = useState<string | null>(null);
-
-    // Reset to page 1 when filters change
-    useMemo(() => {
-        setPage(1);
-    }, [search, mainCategory, accountName, currentMonth, currentYear]);
 
     const filterOptions: TransactionFilter = useMemo(() => ({
         month: currentMonth,
@@ -41,18 +35,13 @@ export default function TransactionsPage() {
     const paginatedResult = rawData as PaginatedResponse<Transaction> | undefined;
 
     // Fallback data structure with forced type cast
+    const fallbackCategory: Category = { id: "", name: "Uncategorized", mainCategory: "Needs", icon: "ShoppingCart" };
     const transactions = (paginatedResult?.data || []).map(t => ({
         ...t,
-        category: t.category || { id: '', name: 'Uncategorized', mainCategory: 'Needs', icon: 'ShoppingCart' }
-    })) as (Transaction & { category: any })[];
+        category: t.category || fallbackCategory
+    })) as (Transaction & { category: Category })[];
     const totalPages = paginatedResult?.totalPages || 1;
     const totalTransactions = paginatedResult?.count || 0;
-
-    // Total expenses shown for the current page. If needing global, that requires a separate summary API. 
-    // Usually paginated views don't show global sum here, or we accept showing page sum
-    const currentExpenses = (transactions as any[])
-        .filter((t: any) => t.amount < 0)
-        .reduce((sum: number, t: any) => sum + Math.abs(t.amount), 0);
 
     return (
         <div className="space-y-4 animate-in fade-in duration-500">
@@ -72,11 +61,20 @@ export default function TransactionsPage() {
             {/* Filters */}
             <TransactionFilters
                 search={search}
-                onSearchChange={setSearch}
+                onSearchChange={(value) => {
+                    setSearch(value);
+                    setPage(1);
+                }}
                 mainCategory={mainCategory}
-                onMainCategoryChange={setMainCategory}
+                onMainCategoryChange={(value) => {
+                    setMainCategory(value);
+                    setPage(1);
+                }}
                 accountName={accountName}
-                onAccountNameChange={setAccountName}
+                onAccountNameChange={(value) => {
+                    setAccountName(value);
+                    setPage(1);
+                }}
             />
 
             {/* Table */}

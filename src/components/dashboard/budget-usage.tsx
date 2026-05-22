@@ -19,9 +19,9 @@ function getProgressEmoji(mainCategory: string): string {
 }
 
 function getStatusLabel(percentage: number, mainCategory: string): string {
-    if (mainCategory === "Savings") return `${percentage}% Tersimpan`;
-    if (percentage > 100) return "Melebihi!";
-    return `${percentage}% Terpakai`;
+    if (mainCategory === "Savings") return `${percentage}% dari Pemasukan`;
+    if (percentage > 100) return "Melebihi Pemasukan!";
+    return `${percentage}% dari Pemasukan`;
 }
 
 export function BudgetUsage() {
@@ -32,7 +32,7 @@ export function BudgetUsage() {
         <div className="rounded-2xl border border-primary/10 bg-white p-5 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
             <div className="flex items-center justify-between mb-5">
                 <div>
-                    <h3 className="text-sm font-semibold text-foreground">Penggunaan Anggaran</h3>
+                    <h3 className="text-sm font-semibold text-foreground">Proporsi Pengeluaran</h3>
                     <p className="text-xs text-muted-foreground mt-0.5">Bulan ini</p>
                 </div>
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-sm">
@@ -48,7 +48,7 @@ export function BudgetUsage() {
                         ))}
                     </div>
                 ) : !budgetStatus || budgetStatus.length === 0 ? (
-                    <div className="text-center py-4 text-sm text-muted-foreground">Belum ada data anggaran</div>
+                    <div className="text-center py-4 text-sm text-muted-foreground">Belum ada data pengeluaran</div>
                 ) : (
                     budgetStatus.map((status) => {
                         const progressColor = getProgressColor(status.percentage, status.mainCategory);
@@ -64,12 +64,8 @@ export function BudgetUsage() {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-currency text-muted-foreground">
-                                            {formatCurrency(status.spent)}
-                                        </span>
-                                        <span className="text-[10px] text-muted-foreground">/</span>
                                         <span className="text-xs font-currency text-foreground font-medium">
-                                            {formatCurrency(status.allocated)}
+                                            {formatCurrency(status.spent)}
                                         </span>
                                     </div>
                                 </div>
@@ -86,7 +82,7 @@ export function BudgetUsage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-start">
                                     <span
                                         className={cn(
                                             "text-[10px] font-medium rounded-full px-2 py-0.5",
@@ -100,13 +96,6 @@ export function BudgetUsage() {
                                         )}
                                     >
                                         {getStatusLabel(status.percentage, status.mainCategory)}
-                                    </span>
-                                    <span className="text-[10px] text-muted-foreground font-currency">
-                                        {status.remaining > 0
-                                            ? `Sisa ${formatCurrency(status.remaining)}`
-                                            : status.mainCategory === "Savings"
-                                                ? "Target tercapai ✓"
-                                                : "Habis!"}
                                     </span>
                                 </div>
                             </div>

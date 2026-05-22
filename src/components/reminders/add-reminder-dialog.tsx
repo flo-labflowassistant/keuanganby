@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { useCreateReminder } from "@/hooks/use-queries";
+import { formatDateInputValue } from "@/lib/utils";
 import { toast } from "sonner";
 
 export function AddReminderDialog() {
@@ -23,7 +24,7 @@ export function AddReminderDialog() {
     const [form, setForm] = useState({
         title: "",
         amount: "",
-        dueDate: new Date().toISOString().split("T")[0],
+        dueDate: formatDateInputValue(),
         isRecurring: false,
     });
 
@@ -42,7 +43,7 @@ export function AddReminderDialog() {
             setForm({
                 title: "",
                 amount: "",
-                dueDate: new Date().toISOString().split("T")[0],
+                dueDate: formatDateInputValue(),
                 isRecurring: false,
             });
         } catch {

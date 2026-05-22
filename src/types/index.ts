@@ -44,6 +44,8 @@ export interface Transaction {
     amount: number;
     accountName: string;
     isRecurring: boolean;
+    transferGroupId?: string | null;
+    transferRole?: "source" | "destination" | null;
     category?: Category;
 }
 
@@ -64,6 +66,22 @@ export interface SavingGoal {
     deadline: string;
     isAchieved: boolean;
     icon?: string;
+}
+
+export interface Account {
+    id: string;
+    name: string;
+    type: string;
+    balance: number;
+}
+
+export interface SavingsOverview {
+    balance: number;
+    monthlyInflow: number;
+    monthlyOutflow: number;
+    monthlyNet: number;
+    inflowTransactions: Transaction[];
+    outflowTransactions: Transaction[];
 }
 
 export interface Reminder {

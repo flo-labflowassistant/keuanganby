@@ -1,535 +1,730 @@
-import { supabase } from '@/lib/supabase';
+import { supabase } from "@/lib/supabase";
+import { formatDateInputValue, parseDateOnly } from "@/lib/utils";
 import {
-    Category,
-    Transaction,
-    SavingGoal,
-    Reminder,
-    DashboardSummary,
+    Account,
     BudgetStatus,
+    Category,
+    DashboardSummary,
+    MainCategory,
     MonthlyData,
     PaginatedResponse,
-    TransactionFilter
-} from '@/types';
+    Reminder,
+    SavingGoal,
+    SavingsOverview,
+    Transaction,
+    TransactionFilter,
+} from "@/types";
+
+const MAIN_ACCOUNT_NAME = "Kartu Utama";
+const SAVINGS_ACCOUNT_NAME = "Kartu Tabungan";
+const LEGACY_SAVINGS_CATEGORY = "General Savings";
+const SAVINGS_CATEGORY_NAME = "Tabungan";
+
+type TransactionType = "income" | "expense" | "transfer";
+type TransferRole = "source" | "destination";
+
+type CategoryRow = {
+    id: string;
+    name: string;
+    main_category: MainCategory;
+    icon?: string | null;
+    budget_allocation?: number | string | null;
+};
+
+type AccountRow = {
+    id: string;
+    name: string;
+    type: string;
+    balance?: number | string | null;
+};
+
+type JoinedTransactionRow = {
+    id: string;
+    transaction_date: string;
+    description: string;
+    amount: number | string;
+    type: TransactionType;
+    category_id?: string | null;
+    account_id?: string | null;
+    category?: CategoryRow | CategoryRow[] | null;
+    account?: Pick<AccountRow, "name"> | Pick<AccountRow, "name">[] | null;
+    transfer_group_id?: string | null;
+    transfer_role?: TransferRole | null;
+};
+
+type TransactionInsert = {
+    transaction_date: string;
+    description: string;
+    amount: number;
+    type: TransactionType;
+    category_id?: string | null;
+    account_id?: string | null;
+    transfer_group_id?: string | null;
+    transfer_role?: TransferRole | null;
+};
+
+function getMonthRange(month: number, year: number) {
+    const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+    const endDate = `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
+
+    return { startDate, endDate };
+}
+
+function firstJoin<T>(value: T | T[] | null | undefined): T | undefined {
+    if (!value) return undefined;
+    return Array.isArray(value) ? value[0] : value;
+}
+
+function displayCategoryName(name: string): string {
+    return name === LEGACY_SAVINGS_CATEGORY ? SAVINGS_CATEGORY_NAME : name;
+}
+
+function mapCategory(row: CategoryRow): Category {
+    return {
+        id: row.id,
+        name: displayCategoryName(row.name),
+        mainCategory: row.main_category,
+        budget_allocation: row.budget_allocation ? Number(row.budget_allocation) : 0,
+        accountName: "",
+        isFixed: false,
+        icon: row.icon || (row.main_category === "Savings" ? "PiggyBank" : "circle"),
+    };
+}
+
+function mapTransaction(row: JoinedTransactionRow): Transaction {
+    const category = firstJoin(row.category);
+    const account = firstJoin(row.account);
+    const amount = Number(row.amount);
+
+    return {
+        id: row.id,
+        date: row.transaction_date,
+        description: row.description,
+        categoryId: category?.id || row.category_id || "",
+        amount: row.type === "expense" ? -amount : amount,
+        accountName: account?.name || "",
+        isRecurring: false,
+        transferGroupId: row.transfer_group_id ?? null,
+        transferRole: row.transfer_role ?? null,
+        category: category ? mapCategory(category) : undefined,
+    };
+}
+
+function isMissingTransferMetadataError(error: { code?: string; message?: string }) {
+    const message = error.message || "";
+    return (
+        error.code === "42703" ||
+        error.code === "PGRST204" ||
+        message.includes("transfer_group_id") ||
+        message.includes("transfer_role")
+    );
+}
+
+function stripTransferMetadata(row: TransactionInsert): TransactionInsert {
+    const cleanRow = { ...row };
+    delete cleanRow.transfer_group_id;
+    delete cleanRow.transfer_role;
+    return cleanRow;
+}
+
+async function insertTransactions(rows: TransactionInsert[]): Promise<void> {
+    const { error } = await supabase.from("transactions").insert(rows);
+    if (!error) return;
+
+    const hasTransferMetadata = rows.some((row) => row.transfer_group_id || row.transfer_role);
+    if (hasTransferMetadata && isMissingTransferMetadataError(error)) {
+        const fallbackRows = rows.map(stripTransferMetadata);
+        const { error: fallbackError } = await supabase.from("transactions").insert(fallbackRows);
+        if (fallbackError) throw fallbackError;
+        return;
+    }
+
+    throw error;
+}
+
+async function fetchAccounts(): Promise<AccountRow[]> {
+    const { data, error } = await supabase.from("accounts").select("*").order("name", { ascending: true });
+    if (error) throw error;
+    return data as AccountRow[];
+}
+
+async function fetchCategories(): Promise<CategoryRow[]> {
+    const { data, error } = await supabase.from("categories").select("*").order("name", { ascending: true });
+    if (error) throw error;
+    return data as CategoryRow[];
+}
+
+async function fetchTransactionForDelete(id: string) {
+    const withMetadata = await supabase
+        .from("transactions")
+        .select("description, amount, transaction_date, account_id, type, category_id, transfer_group_id, transfer_role")
+        .eq("id", id)
+        .single();
+
+    if (!withMetadata.error) {
+        return withMetadata.data as Pick<
+            JoinedTransactionRow,
+            "description" | "amount" | "transaction_date" | "account_id" | "type" | "category_id" | "transfer_group_id" | "transfer_role"
+        >;
+    }
+
+    if (!isMissingTransferMetadataError(withMetadata.error)) {
+        throw withMetadata.error;
+    }
+
+    const withoutMetadata = await supabase
+        .from("transactions")
+        .select("description, amount, transaction_date, account_id, type, category_id")
+        .eq("id", id)
+        .single();
+
+    if (withoutMetadata.error) throw withoutMetadata.error;
+
+    return {
+        ...(withoutMetadata.data as Pick<
+            JoinedTransactionRow,
+            "description" | "amount" | "transaction_date" | "account_id" | "type" | "category_id"
+        >),
+        transfer_group_id: null,
+        transfer_role: null,
+    };
+}
 
 // === DASHBOARD & ANALYTICS ===
 
 export async function getDashboardSummary(month: number, year: number): Promise<DashboardSummary> {
-    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const nextMonth = month === 12 ? 1 : month + 1;
-    const nextYear = month === 12 ? year + 1 : year;
-    const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
+    const { startDate, endDate } = getMonthRange(month, year);
 
-    const { data: txns, error } = await supabase
-        .from('transactions')
-        .select('amount, type')
-        .gte('transaction_date', startDate)
-        .lt('transaction_date', endDate);
+    const { data, error } = await supabase
+        .from("transactions")
+        .select(`
+            amount, type,
+            category:categories(main_category),
+            account:accounts!inner(name)
+        `)
+        .eq("accounts.name", MAIN_ACCOUNT_NAME)
+        .gte("transaction_date", startDate)
+        .lt("transaction_date", endDate);
 
     if (error) throw error;
 
     let income = 0;
-    let expenses = 0;
+    let operatingExpenses = 0;
     let savings = 0;
 
-    // Filter "Income" by type='income'
-    const incomeTxns = txns.filter(t => t.type === 'income');
-    income = incomeTxns.reduce((sum, t) => sum + Number(t.amount), 0);
+    (data as JoinedTransactionRow[]).forEach((txn) => {
+        const amount = Number(txn.amount);
+        const category = firstJoin(txn.category);
 
-    // Add planned income from budget allocations based on month and year
-    const { data: incomeBudgets } = await supabase
-        .from('monthly_budgets')
-        .select(`
-            amount,
-            categories!inner(main_category)
-        `)
-        .eq('month', month)
-        .eq('year', year)
-        .eq('categories.main_category', 'Income');
+        if (txn.type === "income") {
+            income += amount;
+            return;
+        }
 
-    if (incomeBudgets) {
-        const plannedIncome = incomeBudgets.reduce((sum, b) => sum + Number(b.amount || 0), 0);
-        income += plannedIncome;
-    }
+        if (txn.type !== "expense") return;
 
-    // Get transfers to savings account (if any logic) or just expenses
-    // Assuming transactions categorized as savings have category_id -> Savings
-    // It's faster to just fetch everything with categories
-    const { data: fullTxns } = await supabase
-        .from('transactions')
-        .select(`
-            amount, type, category_id,
-            category:categories(main_category)
-        `)
-        .gte('transaction_date', startDate)
-        .lt('transaction_date', endDate);
-
-    expenses = 0;
-    savings = 0;
-
-    if (fullTxns) {
-        fullTxns.forEach(t => {
-            if (t.type === 'expense') {
-                const cat = Array.isArray(t.category) ? t.category[0] : t.category;
-                if (cat?.main_category === 'Savings') {
-                    savings += Number(t.amount);
-                } else {
-                    expenses += Number(t.amount);
-                }
-            }
-        });
-    }
+        if (category?.main_category === "Savings") {
+            savings += amount;
+        } else {
+            operatingExpenses += amount;
+        }
+    });
 
     return {
         totalIncome: income,
         totalSavings: savings,
-        totalExpenses: expenses,
-        incomeTrend: 0, // Mock for now
+        totalExpenses: operatingExpenses,
+        incomeTrend: 0,
         savingsTrend: 0,
         expensesTrend: 0,
     };
 }
 
 export async function getBudgetStatus(month: number, year: number): Promise<BudgetStatus[]> {
-    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const nextMonth = month === 12 ? 1 : month + 1;
-    const nextYear = month === 12 ? year + 1 : year;
-    const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
+    const { startDate, endDate } = getMonthRange(month, year);
+    const categories = await fetchCategories();
 
-    const { data: categories, error: catError } = await supabase
-        .from('categories')
-        .select('*');
+    const { data: txns, error } = await supabase
+        .from("transactions")
+        .select("amount, type, category_id, account:accounts!inner(name)")
+        .eq("accounts.name", MAIN_ACCOUNT_NAME)
+        .gte("transaction_date", startDate)
+        .lt("transaction_date", endDate);
 
-    if (catError) throw catError;
+    if (error) throw error;
 
-    const { data: budgets } = await supabase
-        .from('monthly_budgets')
-        .select('category_id, amount')
-        .eq('month', month)
-        .eq('year', year);
+    const totalIncome = (txns as JoinedTransactionRow[])
+        .filter((txn) => txn.type === "income")
+        .reduce((sum, txn) => sum + Number(txn.amount), 0);
 
-    const { data: txns, error: txError } = await supabase
-        .from('transactions')
-        .select('amount, category_id')
-        .eq('type', 'expense')
-        .gte('transaction_date', startDate)
-        .lt('transaction_date', endDate);
-
-    if (txError) throw txError;
-
-    const result: Record<string, BudgetStatus> = {
-        Needs: { category: "Kebutuhan (Needs)", mainCategory: "Needs", allocated: 0, spent: 0, remaining: 0, percentage: 0 },
-        Wants: { category: "Keinginan (Wants)", mainCategory: "Wants", allocated: 0, spent: 0, remaining: 0, percentage: 0 },
-        Savings: { category: "Tabungan (Savings)", mainCategory: "Savings", allocated: 0, spent: 0, remaining: 0, percentage: 0 },
+    const result: Record<"Needs" | "Wants" | "Savings", BudgetStatus> = {
+        Needs: {
+            category: "Kebutuhan",
+            mainCategory: "Needs",
+            allocated: totalIncome,
+            spent: 0,
+            remaining: totalIncome,
+            percentage: 0,
+        },
+        Wants: {
+            category: "Keinginan",
+            mainCategory: "Wants",
+            allocated: totalIncome,
+            spent: 0,
+            remaining: totalIncome,
+            percentage: 0,
+        },
+        Savings: {
+            category: SAVINGS_CATEGORY_NAME,
+            mainCategory: "Savings",
+            allocated: totalIncome,
+            spent: 0,
+            remaining: totalIncome,
+            percentage: 0,
+        },
     };
 
-    categories.forEach(cat => {
-        if (result[cat.main_category]) {
-            const bg = budgets?.find(b => b.category_id === cat.id);
-            result[cat.main_category].allocated += Number(bg?.amount || 0);
+    (txns as JoinedTransactionRow[]).forEach((txn) => {
+        if (txn.type !== "expense") return;
+        const category = categories.find((cat) => cat.id === txn.category_id);
+        if (category?.main_category === "Needs" || category?.main_category === "Wants" || category?.main_category === "Savings") {
+            result[category.main_category].spent += Number(txn.amount);
         }
     });
 
-    txns.forEach(t => {
-        const cat = categories.find(c => c.id === t.category_id);
-        if (cat && result[cat.main_category]) {
-            result[cat.main_category].spent += Number(t.amount);
-        }
-    });
-
-    Object.values(result).forEach(st => {
-        st.remaining = st.allocated - st.spent;
-        st.percentage = st.allocated > 0 ? Math.min(Math.round((st.spent / st.allocated) * 100), 100) : 0;
+    Object.values(result).forEach((status) => {
+        status.remaining = status.allocated - status.spent;
+        status.percentage = status.allocated > 0 ? Math.round((status.spent / status.allocated) * 100) : 0;
     });
 
     return [result.Needs, result.Wants, result.Savings];
 }
 
-// === MONTHLY TREND ===
-
 export async function getMonthlyTrend(currentMonth: number, currentYear: number): Promise<MonthlyData[]> {
-    // Generate last 6 months dates
     const result: MonthlyData[] = [];
-
-    // Calculate start date (6 months ago)
     let startMonth = currentMonth - 5;
     let startYear = currentYear;
+
     if (startMonth <= 0) {
         startMonth += 12;
         startYear -= 1;
     }
 
-    const startDate = `${startYear}-${String(startMonth).padStart(2, '0')}-01`;
-
+    const startDate = `${startYear}-${String(startMonth).padStart(2, "0")}-01`;
     const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
     const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
-    const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
+    const endDate = `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
 
-    const { data: txns, error } = await supabase
-        .from('transactions')
+    const { data, error } = await supabase
+        .from("transactions")
         .select(`
             transaction_date, amount, type,
-            category:categories(main_category)
+            category:categories(main_category),
+            account:accounts!inner(name)
         `)
-        .gte('transaction_date', startDate)
-        .lt('transaction_date', endDate);
+        .eq("accounts.name", MAIN_ACCOUNT_NAME)
+        .gte("transaction_date", startDate)
+        .lt("transaction_date", endDate);
 
     if (error) throw error;
 
-    // Initialize the last 6 months in result array
     for (let i = 5; i >= 0; i--) {
-        let m = currentMonth - i;
-        let y = currentYear;
-        if (m <= 0) {
-            m += 12;
-            y -= 1;
+        let month = currentMonth - i;
+        let year = currentYear;
+        if (month <= 0) {
+            month += 12;
+            year -= 1;
         }
-        result.push({ month: m, year: y, income: 0, expenses: 0, savings: 0 });
+        result.push({ month, year, income: 0, expenses: 0, savings: 0 });
     }
 
-    if (txns) {
-        txns.forEach(t => {
-            const date = new Date(t.transaction_date);
-            const m = date.getMonth() + 1;
-            const y = date.getFullYear();
+    (data as JoinedTransactionRow[]).forEach((txn) => {
+        const date = parseDateOnly(txn.transaction_date);
+        const monthData = result.find((item) => item.month === date.getMonth() + 1 && item.year === date.getFullYear());
+        if (!monthData) return;
 
-            const monthData = result.find(r => r.month === m && r.year === y);
-            if (monthData) {
-                if (t.type === 'income') {
-                    monthData.income += Number(t.amount);
-                } else if (t.type === 'expense') {
-                    const cat = Array.isArray(t.category) ? t.category[0] : t.category;
-                    if (cat?.main_category === 'Savings') {
-                        monthData.savings += Number(t.amount);
-                    } else {
-                        monthData.expenses += Number(t.amount);
-                    }
-                }
-            }
-        });
-    }
+        const amount = Number(txn.amount);
+        const category = firstJoin(txn.category);
+
+        if (txn.type === "income") {
+            monthData.income += amount;
+        } else if (txn.type === "expense" && category?.main_category === "Savings") {
+            monthData.savings += amount;
+        } else if (txn.type === "expense") {
+            monthData.expenses += amount;
+        }
+    });
 
     return result;
 }
 
 // === TRANSACTIONS ===
 
-export async function getTransactions(month: number, year: number): Promise<Transaction[]> {
-    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const nextMonth = month === 12 ? 1 : month + 1;
-    const nextYear = month === 12 ? year + 1 : year;
-    const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
+export async function getTransactions(month: number, year: number, accountName?: string): Promise<Transaction[]> {
+    const { startDate, endDate } = getMonthRange(month, year);
 
-    const { data, error } = await supabase
-        .from('transactions')
+    let query = supabase
+        .from("transactions")
         .select(`
             id, transaction_date, description, amount, type,
-            category:categories (id, name, main_category, icon),
-            account:accounts (name)
+            category_id, account_id,
+            category:categories(id, name, main_category, icon),
+            account:accounts!inner(name)
         `)
-        .gte('transaction_date', startDate)
-        .lt('transaction_date', endDate)
-        .order('transaction_date', { ascending: false });
+        .gte("transaction_date", startDate)
+        .lt("transaction_date", endDate);
 
+    if (accountName) {
+        query = query.eq("accounts.name", accountName);
+    }
+
+    const { data, error } = await query.order("transaction_date", { ascending: false });
     if (error) throw error;
 
-    return data.map(d => {
-        const cat = Array.isArray(d.category) ? d.category[0] : d.category;
-        const acc = Array.isArray(d.account) ? d.account[0] : d.account;
-
-        // Amount is stored as positive, but conceptually expenses are negative in UI
-        const amountDisplay = d.type === 'expense' ? -Number(d.amount) : Number(d.amount);
-
-        return {
-            id: d.id,
-            date: d.transaction_date,
-            description: d.description,
-            categoryId: cat?.id || '',
-            amount: amountDisplay,
-            accountName: acc?.name || '',
-            isRecurring: false,
-            // @ts-ignore
-            category: cat ? {
-                id: cat.id,
-                name: cat.name,
-                mainCategory: cat.main_category,
-                icon: cat.icon
-            } : undefined
-        };
-    });
+    return (data as JoinedTransactionRow[]).map(mapTransaction);
 }
 
 export async function getPaginatedTransactions(filter: TransactionFilter): Promise<PaginatedResponse<Transaction>> {
-    const { month, year, page, limit, search, mainCategory, accountName } = filter;
-
-    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-    const nextMonth = month === 12 ? 1 : month + 1;
-    const nextYear = month === 12 ? year + 1 : year;
-    const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
-
+    const { month, year, page, limit, search, mainCategory, categoryId, accountName } = filter;
+    const { startDate, endDate } = getMonthRange(month, year);
     const from = (page - 1) * limit;
     const to = from + limit - 1;
 
     let query = supabase
-        .from('transactions')
+        .from("transactions")
         .select(`
             id, transaction_date, description, amount, type,
-            category:categories!inner (id, name, main_category, icon),
-            account:accounts (name)
-        `, { count: 'exact' })
-        .gte('transaction_date', startDate)
-        .lt('transaction_date', endDate);
+            category_id, account_id,
+            category:categories!inner(id, name, main_category, icon),
+            account:accounts!inner(name)
+        `, { count: "exact" })
+        .gte("transaction_date", startDate)
+        .lt("transaction_date", endDate);
 
     if (search) {
-        query = query.ilike('description', `%${search}%`);
+        query = query.ilike("description", `%${search}%`);
+    }
+
+    if (categoryId) {
+        query = query.eq("category_id", categoryId);
     }
 
     if (mainCategory) {
-        query = query.eq('categories.main_category', mainCategory);
+        query = query.eq("categories.main_category", mainCategory);
     }
 
     if (accountName) {
-        query = query.eq('accounts.name', accountName);
+        query = query.eq("accounts.name", accountName);
     }
 
-    query = query.order('transaction_date', { ascending: false }).range(from, to);
-
-    const { data, count, error } = await query;
-
+    const { data, count, error } = await query.order("transaction_date", { ascending: false }).range(from, to);
     if (error) throw error;
 
-    const formattedData = data.map(d => {
-        const cat = Array.isArray(d.category) ? d.category[0] : d.category;
-        const acc = Array.isArray(d.account) ? d.account[0] : d.account;
-        const amountDisplay = d.type === 'expense' ? -Number(d.amount) : Number(d.amount);
-
-        return {
-            id: d.id,
-            date: d.transaction_date,
-            description: d.description,
-            categoryId: cat?.id || '',
-            amount: amountDisplay,
-            accountName: acc?.name || '',
-            isRecurring: false,
-            // @ts-ignore
-            category: cat ? {
-                id: cat.id,
-                name: cat.name,
-                mainCategory: cat.main_category,
-                icon: cat.icon
-            } : undefined
-        };
-    });
-
     return {
-        data: formattedData,
+        data: (data as JoinedTransactionRow[]).map(mapTransaction),
         count: count || 0,
         totalPages: Math.ceil((count || 0) / limit),
-        currentPage: page
+        currentPage: page,
+    };
+}
+
+// === SAVINGS ===
+
+export async function getSavingsOverview(month: number, year: number): Promise<SavingsOverview> {
+    const [accounts, transactions] = await Promise.all([
+        getAccounts(),
+        getTransactions(month, year, SAVINGS_ACCOUNT_NAME),
+    ]);
+
+    const savingsAccount = accounts.find((account) => account.name === SAVINGS_ACCOUNT_NAME);
+    const inflowTransactions = transactions.filter((txn) => txn.amount > 0);
+    const outflowTransactions = transactions.filter((txn) => txn.amount < 0);
+    const monthlyInflow = inflowTransactions.reduce((sum, txn) => sum + txn.amount, 0);
+    const monthlyOutflow = outflowTransactions.reduce((sum, txn) => sum + Math.abs(txn.amount), 0);
+
+    return {
+        balance: savingsAccount?.balance || 0,
+        monthlyInflow,
+        monthlyOutflow,
+        monthlyNet: monthlyInflow - monthlyOutflow,
+        inflowTransactions,
+        outflowTransactions,
     };
 }
 
 // === SAVING GOALS ===
 
 export async function getSavingGoals(): Promise<SavingGoal[]> {
-    const { data, error } = await supabase
-        .from('saving_goals')
-        .select('*')
-        .order('deadline', { ascending: true });
-
+    const { data, error } = await supabase.from("saving_goals").select("*").order("deadline", { ascending: true });
     if (error) throw error;
 
-    return data.map(d => ({
-        id: d.id,
-        name: d.name,
-        targetAmount: Number(d.target_amount),
-        currentAmount: Number(d.current_amount),
-        deadline: d.deadline,
-        isAchieved: Number(d.current_amount) >= Number(d.target_amount),
-        icon: d.icon
+    return data.map((goal) => ({
+        id: goal.id,
+        name: goal.name,
+        targetAmount: Number(goal.target_amount),
+        currentAmount: Number(goal.current_amount),
+        deadline: goal.deadline,
+        isAchieved: Number(goal.current_amount) >= Number(goal.target_amount),
+        icon: goal.icon,
     }));
 }
 
 export async function createSavingGoal(goal: Partial<SavingGoal>): Promise<void> {
-    const { error } = await supabase.from('saving_goals').insert({
+    const { error } = await supabase.from("saving_goals").insert({
         name: goal.name,
         target_amount: goal.targetAmount,
         current_amount: goal.currentAmount || 0,
         deadline: goal.deadline,
-        icon: goal.icon || 'circle'
+        icon: goal.icon || "Target",
     });
     if (error) throw error;
 }
 
 export async function updateSavingGoalAmount(id: string, addedAmount: number, goalName: string): Promise<void> {
-    // 1. Get current amount
     const { data: goal, error: fetchError } = await supabase
-        .from('saving_goals')
-        .select('current_amount')
-        .eq('id', id)
+        .from("saving_goals")
+        .select("current_amount")
+        .eq("id", id)
         .single();
 
     if (fetchError) throw fetchError;
 
     const newAmount = Number(goal.current_amount) + addedAmount;
-
-    // 2. Update current amount
     const { error: updateError } = await supabase
-        .from('saving_goals')
+        .from("saving_goals")
         .update({ current_amount: newAmount })
-        .eq('id', id);
+        .eq("id", id);
 
     if (updateError) throw updateError;
 
-    // 3. Find "Savings" category ID for the transaction
-    const { data: category, error: catError } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('main_category', 'Savings')
+    const { data: category, error: categoryError } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("main_category", "Savings")
         .limit(1)
         .single();
 
-    if (catError) throw catError;
+    if (categoryError) throw categoryError;
 
-    // 4. Insert expense transaction for this savings allocation
-    const { error: txtError } = await supabase
-        .from('transactions')
-        .insert({
-            transaction_date: new Date().toISOString().split('T')[0],
-            description: `Top-up: ${goalName}`,
-            amount: addedAmount,
-            type: 'expense',
-            category_id: category.id,
-        });
-
-    if (txtError) throw txtError;
+    await createTransaction({
+        date: formatDateInputValue(),
+        description: `Menabung: ${goalName}`,
+        amount: -addedAmount,
+        categoryId: category.id,
+        accountName: MAIN_ACCOUNT_NAME,
+        isRecurring: false,
+    });
 }
 
 export async function deleteSavingGoal(id: string): Promise<void> {
-    const { error } = await supabase.from('saving_goals').delete().eq('id', id);
+    const { error } = await supabase.from("saving_goals").delete().eq("id", id);
     if (error) throw error;
 }
 
 // === REMINDERS ===
 
 export async function getReminders(): Promise<Reminder[]> {
-    const { data, error } = await supabase
-        .from('reminders')
-        .select('*')
-        .order('due_date', { ascending: true });
-
+    const { data, error } = await supabase.from("reminders").select("*").order("due_date", { ascending: true });
     if (error) throw error;
 
-    return data.map(d => ({
-        id: d.id,
-        title: d.title,
-        dueDate: d.due_date,
-        amount: Number(d.amount),
-        isCompleted: d.status === 'completed',
-        isRecurring: d.is_recurring,
+    return data.map((reminder) => ({
+        id: reminder.id,
+        title: reminder.title,
+        dueDate: reminder.due_date,
+        amount: Number(reminder.amount),
+        isCompleted: reminder.status === "completed",
+        isRecurring: reminder.is_recurring,
         recurrencePattern: "monthly",
     }));
 }
 
 export async function updateReminderStatus(id: string, isCompleted: boolean): Promise<void> {
     const { error } = await supabase
-        .from('reminders')
-        .update({ status: isCompleted ? 'completed' : 'upcoming' })
-        .eq('id', id);
+        .from("reminders")
+        .update({ status: isCompleted ? "completed" : "upcoming" })
+        .eq("id", id);
 
     if (error) throw error;
 }
 
 export async function createReminder(reminder: Partial<Reminder>): Promise<void> {
-    const { error } = await supabase.from('reminders').insert({
+    const { error } = await supabase.from("reminders").insert({
         title: reminder.title,
         amount: reminder.amount ?? 0,
         due_date: reminder.dueDate,
         is_recurring: reminder.isRecurring || false,
-        status: 'upcoming'
+        status: "upcoming",
     });
     if (error) throw error;
 }
 
 export async function deleteReminder(id: string): Promise<void> {
-    const { error } = await supabase.from('reminders').delete().eq('id', id);
+    const { error } = await supabase.from("reminders").delete().eq("id", id);
     if (error) throw error;
 }
 
-// === CATEGORIES ===
+// === CATEGORIES & ACCOUNTS ===
 
 export async function getCategories(): Promise<Category[]> {
-    const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name', { ascending: true });
+    const categories = await fetchCategories();
+    return categories.map(mapCategory);
+}
 
+export async function getAccounts(): Promise<Account[]> {
+    const accounts = await fetchAccounts();
+    const { data: txns, error } = await supabase.from("transactions").select("account_id, amount, type");
     if (error) throw error;
 
-    return data.map(d => ({
-        id: d.id,
-        name: d.name,
-        mainCategory: d.main_category as "Needs" | "Wants" | "Savings" | "Income",
-        budget_allocation: d.budget_allocation ? Number(d.budget_allocation) : 0,
-        accountName: '', // Legacy UI compatibility
-        isFixed: false,
-        icon: d.icon
-    }));
+    return accounts.map((account) => {
+        const balance = txns
+            .filter((txn) => txn.account_id === account.id)
+            .reduce((sum, txn) => {
+                const amount = Number(txn.amount);
+                return txn.type === "income" ? sum + amount : sum - amount;
+            }, 0);
+
+        return {
+            id: account.id,
+            name: account.name,
+            type: account.type,
+            balance,
+        };
+    });
 }
 
 // === MUTATIONS (CRUD) ===
 
-export async function getMonthlyBudgets(month: number, year: number): Promise<{ categoryId: string, amount: number }[]> {
+export async function getMonthlyBudgets(month: number, year: number): Promise<{ categoryId: string; amount: number }[]> {
     const { data, error } = await supabase
-        .from('monthly_budgets')
-        .select('category_id, amount')
-        .eq('month', month)
-        .eq('year', year);
+        .from("monthly_budgets")
+        .select("category_id, amount")
+        .eq("month", month)
+        .eq("year", year);
 
     if (error) throw error;
 
-    return data.map(d => ({
-        categoryId: d.category_id,
-        amount: Number(d.amount)
+    return data.map((budget) => ({
+        categoryId: budget.category_id,
+        amount: Number(budget.amount),
     }));
 }
 
 export async function updateCategoryBudget(categoryId: string, allocation: number, month: number, year: number): Promise<void> {
-    const { error } = await supabase.from('monthly_budgets').upsert({
+    const { error } = await supabase.from("monthly_budgets").upsert({
         category_id: categoryId,
         month,
         year,
-        amount: allocation
-    }, { onConflict: 'category_id,month,year' });
+        amount: allocation,
+    }, { onConflict: "category_id,month,year" });
     if (error) throw error;
 }
 
 export async function createTransaction(txn: Partial<Transaction>): Promise<void> {
-    let account_id = null;
-    if (txn.accountName) {
-        const { data: acc } = await supabase
-            .from('accounts')
-            .select('id')
-            .ilike('name', txn.accountName)
-            .limit(1)
-            .single();
-        if (acc) {
-            account_id = acc.id;
-        }
+    if (!txn.date || !txn.description || !txn.categoryId) {
+        throw new Error("Tanggal, deskripsi, dan kategori wajib diisi.");
     }
 
-    const { error } = await supabase.from('transactions').insert({
-        transaction_date: txn.date,
-        description: txn.description,
-        amount: Math.abs(txn.amount || 0),
-        type: (txn.amount || 0) < 0 ? 'expense' : 'income',
-        category_id: txn.categoryId,
-        account_id: account_id
-    });
-    if (error) throw error;
+    const finalAmount = Math.abs(txn.amount || 0);
+    const finalType: TransactionType = (txn.amount || 0) < 0 ? "expense" : "income";
+
+    const requestedAccountName = txn.accountName?.trim() || MAIN_ACCOUNT_NAME;
+    const [accounts, categories] = await Promise.all([fetchAccounts(), fetchCategories()]);
+    const sourceAccount = accounts.find((account) => account.name.toLowerCase() === requestedAccountName.toLowerCase());
+    const savingsAccount = accounts.find((account) => account.name === SAVINGS_ACCOUNT_NAME);
+    const category = categories.find((item) => item.id === txn.categoryId);
+
+    if (!sourceAccount) {
+        throw new Error("Akun sumber dana tidak ditemukan.");
+    }
+
+    const isSavingsTransfer =
+        finalType === "expense" &&
+        category?.main_category === "Savings" &&
+        sourceAccount.name === MAIN_ACCOUNT_NAME;
+
+    if (isSavingsTransfer) {
+        if (!savingsAccount) {
+            throw new Error("Akun Kartu Tabungan tidak ditemukan.");
+        }
+
+        const transferGroupId = globalThis.crypto.randomUUID();
+        await insertTransactions([
+            {
+                transaction_date: txn.date,
+                description: txn.description,
+                amount: finalAmount,
+                type: "expense",
+                category_id: txn.categoryId,
+                account_id: sourceAccount.id,
+                transfer_group_id: transferGroupId,
+                transfer_role: "source",
+            },
+            {
+                transaction_date: txn.date,
+                description: `${SAVINGS_CATEGORY_NAME}: ${txn.description}`,
+                amount: finalAmount,
+                type: "income",
+                category_id: txn.categoryId,
+                account_id: savingsAccount.id,
+                transfer_group_id: transferGroupId,
+                transfer_role: "destination",
+            },
+        ]);
+        return;
+    }
+
+    await insertTransactions([
+        {
+            transaction_date: txn.date,
+            description: txn.description,
+            amount: finalAmount,
+            type: finalType,
+            category_id: txn.categoryId,
+            account_id: sourceAccount.id,
+        },
+    ]);
 }
 
 export async function deleteTransaction(id: string): Promise<void> {
-    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    const txn = await fetchTransactionForDelete(id);
+
+    if (txn.transfer_group_id) {
+        const { error } = await supabase.from("transactions").delete().eq("transfer_group_id", txn.transfer_group_id);
+        if (error) throw error;
+        return;
+    }
+
+    const { data: category, error: categoryError } = await supabase
+        .from("categories")
+        .select("main_category")
+        .eq("id", txn.category_id)
+        .single();
+
+    if (categoryError) throw categoryError;
+
+    if (category?.main_category === "Savings" && txn.type === "expense") {
+        await supabase
+            .from("transactions")
+            .delete()
+            .eq("description", `${SAVINGS_CATEGORY_NAME}: ${txn.description}`)
+            .eq("amount", txn.amount)
+            .eq("transaction_date", txn.transaction_date)
+            .eq("type", "income");
+    }
+
+    if (category?.main_category === "Savings" && txn.type === "income" && txn.description.startsWith(`${SAVINGS_CATEGORY_NAME}: `)) {
+        const sourceDescription = txn.description.replace(`${SAVINGS_CATEGORY_NAME}: `, "");
+        await supabase
+            .from("transactions")
+            .delete()
+            .eq("description", sourceDescription)
+            .eq("amount", txn.amount)
+            .eq("transaction_date", txn.transaction_date)
+            .eq("type", "expense");
+    }
+
+    const { error } = await supabase.from("transactions").delete().eq("id", id);
     if (error) throw error;
 }
-

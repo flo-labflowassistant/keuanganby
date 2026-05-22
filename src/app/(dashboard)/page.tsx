@@ -2,6 +2,7 @@ import { SummaryCards } from "@/components/dashboard/summary-cards";
 import { BudgetUsage } from "@/components/dashboard/budget-usage";
 import { MonthlyTrendChart } from "@/components/dashboard/monthly-trend-chart";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
+import { WalletBalance } from "@/components/dashboard/wallet-balance";
 
 export default function DashboardPage() {
     return (
@@ -15,6 +16,9 @@ export default function DashboardPage() {
                     Ini ringkasan keuanganmu bulan ini
                 </p>
             </div>
+
+            {/* Wallet Balances */}
+            <WalletBalance />
 
             {/* Summary Cards */}
             <SummaryCards />

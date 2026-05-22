@@ -72,7 +72,7 @@ try:
             category_map[inc] = cat_id
             cat_values.append(f"('{cat_id}', '{inc}', 'Income')")
             
-        savings_cats = ['General Savings', 'Emergency']
+        savings_cats = ['Tabungan', 'Emergency']
         for sav in savings_cats:
             cat_id = str(uuid.uuid4())
             category_map[sav] = cat_id

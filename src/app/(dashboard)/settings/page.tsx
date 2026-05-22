@@ -70,7 +70,8 @@ function AppearanceTab() {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        const timer = window.setTimeout(() => setMounted(true), 0);
+        return () => window.clearTimeout(timer);
     }, []);
 
     if (!mounted) {
@@ -129,7 +130,8 @@ function NotificationsTab() {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        const timer = window.setTimeout(() => setMounted(true), 0);
+        return () => window.clearTimeout(timer);
     }, []);
 
     if (!mounted) {

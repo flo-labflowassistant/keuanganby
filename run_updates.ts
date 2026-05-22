@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
@@ -28,7 +27,7 @@ const allocations = {
     "Skincare & Toko Oren": 0,
     "Transfer": 1100000,
     "Lainnya": 1576656,
-    "General Savings": 192984,
+    "Tabungan": 192984,
     "Emergency": 0,
     "Total": 5861342,
     "Monthly Salary": 5969800,
@@ -39,7 +38,7 @@ const allocations = {
 
 async function main() {
     for (const [name, amount] of Object.entries(allocations)) {
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('categories')
             .update({ budget_allocation: amount })
             .eq('name', name);

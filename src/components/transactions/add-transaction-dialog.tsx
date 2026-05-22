@@ -20,24 +20,31 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useCategories, useCreateTransaction } from "@/hooks/use-queries";
+import { useCategories, useAccounts, useCreateTransaction } from "@/hooks/use-queries";
+import { formatDateInputValue } from "@/lib/utils";
 import { toast } from "sonner";
-
-const accountNames = ["Cash", "Bank Mandiri", "BCA", "OVO"];
 
 export function AddTransactionDialog({ children }: { children?: React.ReactNode }) {
     const [open, setOpen] = useState(false);
     const { data: categories = [], isLoading: isLoadingCats } = useCategories();
+    const { data: accounts = [], isLoading: isLoadingAccounts } = useAccounts();
     const createTx = useCreateTransaction();
 
     const [form, setForm] = useState({
         description: "",
         amount: "",
         categoryId: "",
-        accountName: "",
-        date: new Date().toISOString().split("T")[0],
+        accountName: "Kartu Utama",
+        date: formatDateInputValue(),
         isRecurring: false,
     });
+
+    const handleOpenChange = (nextOpen: boolean) => {
+        setOpen(nextOpen);
+        if (!nextOpen) {
+            setForm((prev) => ({ ...prev, accountName: "Kartu Utama" }));
+        }
+    };
 
     const handleSubmit = async () => {
         if (!form.description || !form.amount || !form.categoryId || !form.accountName) return;
@@ -61,8 +68,8 @@ export function AddTransactionDialog({ children }: { children?: React.ReactNode 
                 description: "",
                 amount: "",
                 categoryId: "",
-                accountName: "",
-                date: new Date().toISOString().split("T")[0],
+                accountName: "Kartu Utama",
+                date: formatDateInputValue(),
                 isRecurring: false,
             });
         } catch {
@@ -71,7 +78,7 @@ export function AddTransactionDialog({ children }: { children?: React.ReactNode 
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 {children || (
                     <Button className="rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25">
@@ -137,7 +144,7 @@ export function AddTransactionDialog({ children }: { children?: React.ReactNode 
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label className="text-xs font-medium text-foreground">Akun</Label>
+                            <Label className="text-xs font-medium text-foreground">Sumber Dana</Label>
                             <Select
                                 value={form.accountName}
                                 onValueChange={(v) => setForm((p) => ({ ...p, accountName: v }))}
@@ -146,11 +153,15 @@ export function AddTransactionDialog({ children }: { children?: React.ReactNode 
                                     <SelectValue placeholder="Pilih..." />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-xl border-primary/15">
-                                    {accountNames.map((acc) => (
-                                        <SelectItem key={acc} value={acc} className="text-sm">
-                                            {acc}
-                                        </SelectItem>
-                                    ))}
+                                    {isLoadingAccounts ? (
+                                        <SelectItem value="loading" disabled>Memuat...</SelectItem>
+                                    ) : (
+                                        accounts.map((acc) => (
+                                            <SelectItem key={acc.id} value={acc.name} className="text-sm">
+                                                {acc.name}
+                                            </SelectItem>
+                                        ))
+                                    )}
                                 </SelectContent>
                             </Select>
                         </div>

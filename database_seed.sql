@@ -13,7 +13,7 @@ INSERT INTO categories (id, name, main_category) VALUES
 ('ce830b73-7b70-4327-9882-e464b8e900ef', 'Lainnya', 'Wants'),
 ('6762230a-051e-4e97-a4e6-2324c4fade6b', 'Monthly Salary', 'Income'),
 ('93c64ef7-0b1e-4d77-a44a-6cafb8d2d3f9', 'Freelance/Business', 'Income'),
-('fe4baee7-b410-47d6-be6d-adeef72cb43c', 'General Savings', 'Savings'),
+('fe4baee7-b410-47d6-be6d-adeef72cb43c', 'Tabungan', 'Savings'),
 ('ae96a45d-77f7-4ae4-9ee4-56c77989e82c', 'Emergency', 'Savings');
 
 -- INSERTS FOR TRANSACTIONS (Spending Tracker)

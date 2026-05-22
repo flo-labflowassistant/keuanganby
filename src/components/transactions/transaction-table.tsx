@@ -3,7 +3,7 @@
 import {
     Home, ShoppingCart, Car, Wifi, Shield, Film,
     UtensilsCrossed, ShoppingBag, Heart, CreditCard,
-    ShieldCheck, TrendingUp, RotateCcw, Trash2, Loader2
+    ShieldCheck, TrendingUp, RotateCcw, Trash2, Loader2, PiggyBank
 } from "lucide-react";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,7 @@ const iconMap: Record<string, React.ElementType> = {
     Home, ShoppingCart, Car, Wifi, Shield, Film,
     UtensilsCrossed, ShoppingBag, Heart, CreditCard,
     ShieldCheck, TrendingUp,
+    PiggyBank,
 };
 
 function getCategoryBadgeStyle(mainCategory: string) {
